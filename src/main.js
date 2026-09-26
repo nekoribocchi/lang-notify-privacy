@@ -21,9 +21,9 @@ if (supabaseUrl && publishableKey) {
 requestForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const email = new FormData(requestForm).get("email").trim();
-  setRequestBusy(true, "送信しています…");
+  setRequestBusy(true, "Sending…");
   if (!supabase) {
-    setRequestBusy(false, "現在、申請を受け付けられません。時間をおいて再度お試しください。", true);
+    setRequestBusy(false, "We cannot accept requests right now. Please try again later.", true);
     return;
   }
 
@@ -38,17 +38,17 @@ requestForm.addEventListener("submit", async (event) => {
   } catch {
     // 登録状況を推測できないよう、送信結果の表示は常に同じにする。
   }
-  setRequestBusy(false, "該当するアカウントがある場合、確認リンクを記載したメールをお送りします。メールをご確認ください。", true);
+  setRequestBusy(false, "If an account exists for this address, we will email you a verification link. Please check your inbox.", true);
 });
 
 document.querySelector("#delete-button").addEventListener("click", async () => {
   const button = document.querySelector("#delete-button");
   const message = document.querySelector("#delete-message");
   button.disabled = true;
-  message.textContent = "削除しています…";
+  message.textContent = "Deleting your account…";
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
-    message.textContent = "確認リンクの有効期限が切れたようです。最初からやり直してください。";
+    message.textContent = "This verification link may have expired. Please start again.";
     button.disabled = false;
     return;
   }
@@ -56,13 +56,13 @@ document.querySelector("#delete-button").addEventListener("click", async () => {
     body: { confirmDeletion: true },
   });
   if (error || data?.status !== "completed") {
-    message.innerHTML = "削除を完了できませんでした。時間をおいて再度お試しいただくか、<a href=\"mailto:nekoribocchi@gmail.com\">サポートへご連絡</a>ください。";
+    message.innerHTML = "We could not complete the deletion. Please try again later or <a href=\"mailto:nekoribocchi@gmail.com\">contact support</a>.";
     button.disabled = false;
     return;
   }
   await supabase.auth.signOut({ scope: "local" });
   confirmView.hidden = true;
-  showResult("アカウントを削除しました", "アカウントと紐づくクラウドデータを削除しました。Google Play の定期購入は別途解約してください。", true);
+  showResult("Your account has been deleted", "Your account and linked cloud data have been deleted. Remember to cancel your Google Play subscription separately.", true);
 });
 
 document.querySelector("#cancel-button").addEventListener("click", async () => {
@@ -80,14 +80,14 @@ async function showConfirmedSession() {
   if (!user) return;
   requestView.hidden = true;
   confirmView.hidden = false;
-  document.querySelector("#confirm-email").textContent = user.email ?? "確認済みアカウント";
+  document.querySelector("#confirm-email").textContent = user.email ?? "Verified account";
   history.replaceState({}, "", `${location.pathname}?flow=delete-account`);
 }
 
 /** 申請フォームの状態と、登録有無を推測させない共通案内を更新する。 */
 function setRequestBusy(busy, message, isStatus = false) {
   requestButton.disabled = busy;
-  requestButton.textContent = busy ? "送信中…" : "確認リンクを送る";
+  requestButton.textContent = busy ? "Sending…" : "Send verification link";
   requestMessage.textContent = message;
   requestMessage.classList.toggle("status", isStatus);
 }
