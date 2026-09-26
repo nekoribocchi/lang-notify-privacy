@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7f8fc" />
+    <meta name="description" content="Request deletion of your Lang Notify account and learn how your data is handled." />
+    <title>Delete your account | Lang Notify</title>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar"><a class="brand" href="./">LANG <span>NOTIFY</span></a><a href="./privacy.html">Privacy policy</a></header>
+      <main>
+        <section class="hero">
+          <div class="eyebrow">ACCOUNT &amp; PRIVACY</div>
+          <h1>Delete your account</h1>
+          <p class="lead">Request deletion of your Lang Notify account and the cloud data linked to it.</p>
+          <div class="notice"><strong>Before you continue</strong><ul><li>We will email you a one-time link to verify your address.</li><li>After opening the link, you must confirm deletion. Deletion cannot be undone.</li><li>Your Google Play subscription will not be canceled automatically. Cancel it separately in Google Play.</li><li>Free words stored only on your device, the cumulative 60-word usage ledger, and the on-device AI usage limit are not deleted.</li></ul></div>
+        </section>
+        <section class="card" id="request-card">
+          <div id="request-view">
+            <h2>Get a verification link</h2>
+            <p>Enter the email address registered to your account. The message shown after submission is the same whether or not an account is registered.</p>
+            <form id="request-form"><label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="name@example.com" /><button type="submit" id="request-button">Send verification link</button><p class="form-message" id="request-message" role="status" aria-live="polite"></p></form>
+          </div>
+          <div id="confirm-view" hidden><span class="step-label">EMAIL VERIFIED</span><h2>Delete this account?</h2><p>This will delete the account and the cloud data linked to it. This action cannot be undone.</p><div class="confirm-email" id="confirm-email"></div><button class="danger" id="delete-button">Permanently delete my account</button><button class="secondary" id="cancel-button">Cancel</button><p class="form-message" id="delete-message" role="status" aria-live="polite"></p></div>
+          <div id="result-view" hidden><div class="success-mark" id="result-mark">✓</div><h2 id="result-title"></h2><p id="result-copy"></p><a class="text-link" href="./privacy.html">Read the privacy policy</a></div>
+          <noscript>JavaScript must be enabled to submit a deletion request. For help, contact <a href="mailto:nekoribocchi@gmail.com">nekoribocchi@gmail.com</a>.</noscript>
+        </section>
+        <section class="details"><h2>What is deleted and what remains</h2><div class="detail-grid"><article><span class="detail-icon">01</span><h3>Deleted</h3><p>Your account, Premium cloud words, entitlements, and account-linked AI usage information are deleted. Temporary backups may take up to 30 days to expire.</p></article><article><span class="detail-icon">02</span><h3>Remains on your device</h3><p>Regular Free words, the cumulative 60-word usage ledger, and the on-device AI usage limit are stored on your device. Account deletion does not remove them. Delete them separately in the app or on your device if you wish.</p></article><article><span class="detail-icon">03</span><h3>Purchases and subscriptions</h3><p>Deleting your account does not cancel a Google Play subscription. To stop future charges, cancel it separately in Google Play subscriptions.</p></article></div><p class="contact-line">Questions about account deletion? <a href="mailto:nekoribocchi@gmail.com">nekoribocchi@gmail.com</a></p></section>
+      </main>
+      <footer><span>© Lang Notify</span><nav><a href="./privacy.html">Privacy policy</a><a href="mailto:nekoribocchi@gmail.com">Contact</a></nav></footer>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
