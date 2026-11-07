@@ -1,3 +1,17 @@
 node_modules/
 dist/
+/.generated-locales/
+/.generated-pages/
+/ja/
+/es/
+/pt/
+/id/
+/hi/
+/ar/
+/tr/
+/vi/
+/ko/
+/th/
+/fr/
+/de/
 .DS_Store

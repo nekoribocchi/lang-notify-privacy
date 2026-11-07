@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7f8fc" />
+    <meta name="description" content="Request deletion of your Lang Notify account and learn how your data is handled." />
+    <title>Delete your account | Lang Notify</title>
+  </head>
+  <body data-page="account">
+    <div class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="./">LANG <span>NOTIFY</span></a>
+        <nav class="top-nav"><a id="top-privacy" href="./privacy.html">Privacy policy</a><label class="language-picker"><span class="sr-only" id="language-label">Language</span><select id="language-switcher" aria-label="Language"></select></label></nav>
+      </header>
+      <main>
+        <section class="hero">
+          <div class="eyebrow" id="account-eyebrow">ACCOUNT &amp; PRIVACY</div>
+          <h1 id="delete-title">Delete your account</h1>
+          <p class="lead" id="delete-lead"></p>
+          <div class="notice"><strong id="before-title"></strong><ul id="warning-list"></ul></div>
+        </section>
+        <section class="card" id="request-card">
+          <div id="request-view">
+            <h2 id="request-title"></h2>
+            <p id="request-lead"></p>
+            <form id="request-form"><label id="email-label" for="email"></label><input id="email" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="name@example.com" /><button type="submit" id="request-button"></button><p class="form-message" id="request-message" role="status" aria-live="polite"></p></form>
+          </div>
+          <div id="confirm-view" hidden><span class="step-label" id="verified-label"></span><h2 id="confirm-title"></h2><p id="confirm-lead"></p><div class="confirm-email" id="confirm-email"></div><button class="danger" id="delete-button"></button><button class="secondary" id="cancel-button"></button><p class="form-message" id="delete-message" role="status" aria-live="polite"></p></div>
+          <div id="result-view" hidden><div class="success-mark" id="result-mark">✓</div><h2 id="result-title"></h2><p id="result-copy"></p><a class="text-link" id="result-policy" href="./privacy.html"></a></div>
+          <noscript><span id="noscript-copy">JavaScript must be enabled to submit a deletion request. For help, contact</span> <a href="mailto:nekoribocchi@gmail.com">nekoribocchi@gmail.com</a>.</noscript>
+        </section>
+        <section class="details"><h2 id="what-deleted"></h2><div class="detail-grid" id="deletion-cards"></div><p class="contact-line"><span id="contact-question"></span> <a href="mailto:nekoribocchi@gmail.com">nekoribocchi@gmail.com</a></p></section>
+      </main>
+      <footer><span>© Lang Notify</span><nav><a id="footer-privacy" href="./privacy.html">Privacy policy</a><a id="footer-contact" href="mailto:nekoribocchi@gmail.com">Contact</a></nav></footer>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
