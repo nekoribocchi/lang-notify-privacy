@@ -23,6 +23,7 @@ const hasAuthCallback = initialUrl.searchParams.has("code") ||
   initialHash.has("access_token") || initialHash.has("error");
 let supabase;
 let confirmationCheckStarted = false;
+let verifiedDeletionUserId;
 
 applySharedLocale(locale, text);
 renderDeletionPage();
@@ -54,7 +55,7 @@ if (supabaseUrl && publishableKey) {
   }
 }
 
-// メールアプリのリンク先読みだけでは認証を消費せず、本人が押した時にだけ検証する。
+// 削除ボタンが押された時にだけ本人確認し、成功したアカウントの削除を開始する。
 document.querySelector("#verify-button").addEventListener("click", async () => {
   const button = document.querySelector("#verify-button");
   const message = document.querySelector("#verify-message");
@@ -65,15 +66,22 @@ document.querySelector("#verify-button").addEventListener("click", async () => {
     button.disabled = false;
     return;
   }
-  try {
-    const { error } = await supabase.auth.verifyOtp({ token_hash: pendingTokenHash, type: "email" });
-    if (error) throw error;
-  } catch {
-    message.textContent = text.expired;
-    button.disabled = false;
-    return;
+  if (!verifiedDeletionUserId) {
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({ token_hash: pendingTokenHash, type: "email" });
+      if (error || !data.session?.user?.id) {
+        message.textContent = error?.code === "otp_expired" ? text.expired : text.deleteFailed;
+        button.disabled = false;
+        return;
+      }
+      verifiedDeletionUserId = data.session.user.id;
+    } catch {
+      message.textContent = text.deleteFailed;
+      button.disabled = false;
+      return;
+    }
   }
-  await showConfirmedSession();
+  await deleteVerifiedAccount(button, message, verifiedDeletionUserId);
 });
 
 requestForm.addEventListener("submit", async (event) => {
@@ -103,28 +111,12 @@ requestForm.addEventListener("submit", async (event) => {
   setRequestBusy(false, text.sent, true);
 });
 
+// 既存メールの認証後に表示される削除ボタンも、同じ削除処理を使う。
 document.querySelector("#delete-button").addEventListener("click", async () => {
   const button = document.querySelector("#delete-button");
   const message = document.querySelector("#delete-message");
   button.disabled = true;
-  message.textContent = text.deleting;
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
-    message.textContent = text.expired;
-    button.disabled = false;
-    return;
-  }
-  const { data, error } = await supabase.functions.invoke("delete-account", {
-    body: { confirmDeletion: true },
-  });
-  if (error || data?.status !== "completed") {
-    message.textContent = text.deleteFailed;
-    button.disabled = false;
-    return;
-  }
-  await supabase.auth.signOut({ scope: "local" });
-  confirmView.hidden = true;
-  showResult(text.deletedTitle, text.deletedCopy, true);
+  await deleteVerifiedAccount(button, message);
 });
 
 document.querySelector("#cancel-button").addEventListener("click", async () => {
@@ -145,9 +137,9 @@ function renderDeletionPage() {
   setText("#before-title", text.before);
   setText("#request-title", text.requestTitle);
   setText("#request-lead", text.requestLead);
-  setText("#verify-title", text.verifyTitle);
-  setText("#verify-lead", text.verifyLead);
-  setText("#verify-button", text.verifyButton);
+  setText("#verify-title", text.confirmTitle);
+  setText("#verify-lead", text.confirmLead);
+  setText("#verify-button", text.confirmDelete);
   setText("#email-label", text.email);
   setText("#request-button", text.send);
   setText("#verified-label", text.verified);
@@ -172,6 +164,34 @@ function renderDeletionPage() {
     article.append(makeElement("p", text.cardText[index]));
     cardGrid.append(article);
   });
+}
+
+/**
+ * 本人確認済みのセッションで削除を実行する。
+ * expectedUserId がある場合は同じアカウントか確認し、通信失敗時は再試行を可能にする。
+ * 削除成功後はローカルの認証情報を破棄し、結果画面へ切り替える。
+ */
+async function deleteVerifiedAccount(button, message, expectedUserId) {
+  message.textContent = text.deleting;
+  try {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session || (expectedUserId && session.user.id !== expectedUserId)) {
+      message.textContent = text.expired;
+      button.disabled = false;
+      return;
+    }
+    const { data, error } = await supabase.functions.invoke("delete-account", {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+      body: { confirmDeletion: true },
+    });
+    if (error || data?.status !== "completed") throw error || new Error("deletion failed");
+    // アカウント削除後のローカルログアウトに失敗しても、削除成功は取り消せない。
+    try { await supabase.auth.signOut({ scope: "local" }); } catch { /* 削除結果を優先する。 */ }
+    showResult(text.deletedTitle, text.deletedCopy, true);
+  } catch {
+    message.textContent = text.deleteFailed;
+    button.disabled = false;
+  }
 }
 
 /** URL の一時リンクを確認し、本人確認に成功した場合だけ最終確認を見せる。 */
