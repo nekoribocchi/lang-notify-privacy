@@ -13,7 +13,14 @@ const requestMessage = document.querySelector("#request-message");
 const requestView = document.querySelector("#request-view");
 const confirmView = document.querySelector("#confirm-view");
 const resultView = document.querySelector("#result-view");
+const initialUrl = new URL(location.href);
+const initialHash = new URLSearchParams(initialUrl.hash.slice(1));
+const isDeletionFlow = initialUrl.searchParams.get("flow") === "delete-account";
+const hasAuthCallback = initialUrl.searchParams.has("code") ||
+  initialUrl.searchParams.has("error") || initialUrl.searchParams.has("error_code") ||
+  initialHash.has("access_token") || initialHash.has("error");
 let supabase;
+let confirmationCheckStarted = false;
 
 applySharedLocale(locale, text);
 renderDeletionPage();
@@ -22,7 +29,20 @@ if (supabaseUrl && publishableKey) {
   supabase = createClient(supabaseUrl, publishableKey, {
     auth: { storageKey: "lang-notify-account-deletion-auth", detectSessionInUrl: true },
   });
-  showConfirmedSession();
+  // Magic link の戻り値を SDK が処理してから、確認画面へ切り替える。
+  supabase.auth.onAuthStateChange((event) => {
+    if (
+      isDeletionFlow && hasAuthCallback &&
+      (event === "INITIAL_SESSION" || event === "SIGNED_IN")
+    ) {
+      setTimeout(() => showConfirmedSession(), 0);
+    }
+  });
+  if (isDeletionFlow && hasAuthCallback) {
+    setRequestBusy(true, text.sending);
+  } else if (isDeletionFlow) {
+    setRequestBusy(false, text.expired, true);
+  }
 }
 
 requestForm.addEventListener("submit", async (event) => {
@@ -35,7 +55,8 @@ requestForm.addEventListener("submit", async (event) => {
   }
 
   try {
-    const redirect = new URL(location.href);
+    await supabase.auth.signOut({ scope: "local" });
+    const redirect = new URL(import.meta.env.BASE_URL, location.origin);
     redirect.searchParams.set("flow", "delete-account");
     await supabase.auth.signInWithOtp({
       email,
@@ -120,16 +141,31 @@ function renderDeletionPage() {
 
 /** URL の一時リンクを確認し、本人確認に成功した場合だけ最終確認を見せる。 */
 async function showConfirmedSession() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return;
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-  requestView.hidden = true;
-  confirmView.hidden = false;
-  document.querySelector("#confirm-email").textContent = user.email ?? "";
-  const url = new URL(location.href);
-  url.searchParams.set("flow", "delete-account");
-  history.replaceState({}, "", `${url.pathname}${url.search}`);
+  if (confirmationCheckStarted) return;
+  confirmationCheckStarted = true;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      confirmationCheckStarted = false;
+      setRequestBusy(false, text.expired, true);
+      return;
+    }
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) {
+      confirmationCheckStarted = false;
+      setRequestBusy(false, text.expired, true);
+      return;
+    }
+    requestView.hidden = true;
+    confirmView.hidden = false;
+    document.querySelector("#confirm-email").textContent = user.email ?? "";
+    const url = new URL(location.href);
+    url.searchParams.set("flow", "delete-account");
+    history.replaceState({}, "", `${url.pathname}${url.search}`);
+  } catch {
+    confirmationCheckStarted = false;
+    setRequestBusy(false, text.expired, true);
+  }
 }
 
 /** 申請中の表示と、登録有無を推測させない共通案内を更新する。 */
