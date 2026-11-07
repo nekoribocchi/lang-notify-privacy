@@ -58,7 +58,7 @@ export const translations = {
     ]
   },
   "es-419": {
-    name: "Español (Latinoamérica)", dir: "ltr", languageLabel: "Idioma", account: "Eliminar cuenta", privacy: "Política de privacidad", contact: "Contacto",
+    name: "Español", dir: "ltr", languageLabel: "Idioma", account: "Eliminar cuenta", privacy: "Política de privacidad", contact: "Contacto",
     deleteTitle: "Eliminar tu cuenta", deleteLead: "Solicita la eliminación de tu cuenta de Lang Notify y de los datos en la nube asociados.", before: "Antes de continuar",
     warnings: ["Te enviaremos por correo un enlace de un solo uso para verificar tu dirección.", "Después de abrir el enlace, debes confirmar la eliminación. No se puede deshacer.", "La suscripción de Google Play no se cancela automáticamente. Cancélala por separado en Google Play.", "No se eliminan las palabras Free guardadas solo en tu dispositivo, el registro acumulado de 60 palabras ni el límite de IA del dispositivo."],
     requestTitle: "Recibe un enlace de verificación", requestLead: "Ingresa el correo registrado en tu cuenta. El mensaje después del envío será el mismo exista o no una cuenta registrada.",
@@ -85,7 +85,7 @@ export const translations = {
     ]
   },
   "pt-BR": {
-    name: "Português (Brasil)", dir: "ltr", languageLabel: "Idioma", account: "Excluir conta", privacy: "Política de privacidade", contact: "Contato",
+    name: "Português", dir: "ltr", languageLabel: "Idioma", account: "Excluir conta", privacy: "Política de privacidade", contact: "Contato",
     deleteTitle: "Excluir sua conta", deleteLead: "Solicite a exclusão da sua conta Lang Notify e dos dados na nuvem vinculados a ela.", before: "Antes de continuar",
     warnings: ["Enviaremos por e-mail um link de uso único para verificar seu endereço.", "Depois de abrir o link, você precisa confirmar a exclusão. Não será possível desfazê-la.", "A assinatura do Google Play não será cancelada automaticamente. Cancele-a separadamente no Google Play.", "As palavras do plano Free salvas somente no dispositivo, o registro acumulado de 60 palavras e o limite de IA no dispositivo não serão excluídos."],
     requestTitle: "Receber link de verificação", requestLead: "Digite o e-mail cadastrado na sua conta. A mensagem após o envio será a mesma, exista ou não uma conta cadastrada.",
