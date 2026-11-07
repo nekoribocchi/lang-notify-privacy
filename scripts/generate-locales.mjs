@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { localeOrder, translations } from "../src/translations.js";
+import { localePath } from "../src/locale-paths.js";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const accountTemplate = await readFile(resolve(projectRoot, "src/templates/account.html"), "utf8");
@@ -9,7 +10,7 @@ const privacyTemplate = await readFile(resolve(projectRoot, "src/templates/priva
 
 for (const locale of localeOrder) {
   const text = translations[locale];
-  const route = locale === "en" ? "" : `${locale}/`;
+  const route = locale === "en" ? "" : `${localePath(locale)}/`;
   const accountPage = renderAccountPage(accountTemplate, locale, text);
   const privacyPage = renderPrivacyPage(privacyTemplate, locale, text);
   await writePage(resolve(projectRoot, `${route}index.html`), accountPage);
@@ -47,9 +48,9 @@ function renderAccountPage(template, locale, text) {
   html = setAttribute(html, "email", "placeholder", text.emailPlaceholder);
   html = setElement(html, "language-label", escapeHtml(text.languageLabel));
   html = setAttribute(html, "language-switcher", "aria-label", text.languageLabel);
-  html = setAttribute(html, "top-privacy", "href", `./privacy.html?lang=${encodeURIComponent(locale)}`);
-  html = setAttribute(html, "footer-privacy", "href", `./privacy.html?lang=${encodeURIComponent(locale)}`);
-  html = setAttribute(html, "result-policy", "href", `./privacy.html?lang=${encodeURIComponent(locale)}`);
+  html = setAttribute(html, "top-privacy", "href", `./privacy.html?lang=${encodeURIComponent(localePath(locale))}`);
+  html = setAttribute(html, "footer-privacy", "href", `./privacy.html?lang=${encodeURIComponent(localePath(locale))}`);
+  html = setAttribute(html, "result-policy", "href", `./privacy.html?lang=${encodeURIComponent(localePath(locale))}`);
   html = setElement(html, "language-switcher", languageOptions(locale));
   html = setElement(html, "warning-list", text.warnings.map((warning) => `<li>${escapeHtml(warning)}</li>`).join(""));
   html = setElement(html, "deletion-cards", text.cards.map((heading, index) =>
@@ -65,9 +66,9 @@ function renderPrivacyPage(template, locale, text) {
   html = setMetaDescription(html, text.policyIntro);
   html = setTitle(html, `${text.privacy} | Lang Notify`);
   html = setElement(html, "top-account", escapeHtml(text.account));
-  html = setAttribute(html, "top-account", "href", `./?lang=${encodeURIComponent(locale)}`);
+  html = setAttribute(html, "top-account", "href", `./?lang=${encodeURIComponent(localePath(locale))}`);
   html = setElement(html, "footer-account", escapeHtml(text.account));
-  html = setAttribute(html, "footer-account", "href", `./?lang=${encodeURIComponent(locale)}`);
+  html = setAttribute(html, "footer-account", "href", `./?lang=${encodeURIComponent(localePath(locale))}`);
   html = setElement(html, "footer-contact", escapeHtml(text.contact));
   html = setElement(html, "policy-title", escapeHtml(text.policyTitle));
   html = setElement(html, "policy-updated", escapeHtml(text.updated));

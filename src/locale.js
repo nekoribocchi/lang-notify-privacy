@@ -1,11 +1,13 @@
 import { defaultLocale, localeOrder, translations } from "./translations.js";
+import { localeFromPath, localePath } from "./locale-paths.js";
 
 /** URL指定を優先し、端末の言語設定が対応する場合はその言語を初期表示する。 */
 export function resolveLocale() {
   const requested = new URLSearchParams(location.search).get("lang");
-  if (requested && translations[requested]) return requested;
+  const requestedLocale = localeFromPath(requested) || requested;
+  if (requestedLocale && translations[requestedLocale]) return requestedLocale;
   const pathLocales = location.pathname.split("/").filter(Boolean).reverse();
-  const pathLocale = pathLocales.find((segment) => translations[segment]);
+  const pathLocale = pathLocales.map(localeFromPath).find(Boolean);
   if (pathLocale) return pathLocale;
 
   const preferred = navigator.languages?.[0] || navigator.language || defaultLocale;
@@ -66,8 +68,8 @@ function navigateToLocale(locale) {
 
 /** GitHub Pages のベースパスを保ったまま指定言語のURLを作る。 */
 function localizedUrl(page, locale) {
-  const languagePath = locale === "en" ? "" : `${locale}/`;
+  const languagePath = locale === "en" ? "" : `${localePath(locale)}/`;
   const target = new URL(`${import.meta.env.BASE_URL}${languagePath}${page}`, location.origin);
-  target.searchParams.set("lang", locale);
+  target.searchParams.set("lang", localePath(locale));
   return `${target.pathname}${target.search}`;
 }
