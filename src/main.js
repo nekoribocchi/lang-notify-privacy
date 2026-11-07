@@ -11,11 +11,13 @@ const requestForm = document.querySelector("#request-form");
 const requestButton = document.querySelector("#request-button");
 const requestMessage = document.querySelector("#request-message");
 const requestView = document.querySelector("#request-view");
+const verifyView = document.querySelector("#verify-view");
 const confirmView = document.querySelector("#confirm-view");
 const resultView = document.querySelector("#result-view");
 const initialUrl = new URL(location.href);
 const initialHash = new URLSearchParams(initialUrl.hash.slice(1));
 const isDeletionFlow = initialUrl.searchParams.get("flow") === "delete-account";
+const pendingTokenHash = initialUrl.searchParams.get("token_hash");
 const hasAuthCallback = initialUrl.searchParams.has("code") ||
   initialUrl.searchParams.has("error") || initialUrl.searchParams.has("error_code") ||
   initialHash.has("access_token") || initialHash.has("error");
@@ -40,10 +42,39 @@ if (supabaseUrl && publishableKey) {
   });
   if (isDeletionFlow && hasAuthCallback) {
     setRequestBusy(true, text.sending);
+  } else if (isDeletionFlow && pendingTokenHash) {
+    requestView.hidden = true;
+    verifyView.hidden = false;
+    const cleanUrl = new URL(location.href);
+    cleanUrl.searchParams.delete("token_hash");
+    cleanUrl.searchParams.delete("type");
+    history.replaceState({}, "", `${cleanUrl.pathname}${cleanUrl.search}`);
   } else if (isDeletionFlow) {
     setRequestBusy(false, text.expired, true);
   }
 }
+
+// メールアプリのリンク先読みだけでは認証を消費せず、本人が押した時にだけ検証する。
+document.querySelector("#verify-button").addEventListener("click", async () => {
+  const button = document.querySelector("#verify-button");
+  const message = document.querySelector("#verify-message");
+  button.disabled = true;
+  message.textContent = text.verifying;
+  if (!supabase || !pendingTokenHash) {
+    message.textContent = text.expired;
+    button.disabled = false;
+    return;
+  }
+  try {
+    const { error } = await supabase.auth.verifyOtp({ token_hash: pendingTokenHash, type: "email" });
+    if (error) throw error;
+  } catch {
+    message.textContent = text.expired;
+    button.disabled = false;
+    return;
+  }
+  await showConfirmedSession();
+});
 
 requestForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -56,6 +87,7 @@ requestForm.addEventListener("submit", async (event) => {
 
   try {
     await supabase.auth.signOut({ scope: "local" });
+    // 既存のMagic Linkテンプレートでも、Supabaseに登録済みの公開トップへ戻す。
     const redirect = new URL(import.meta.env.BASE_URL, location.origin);
     redirect.searchParams.set("flow", "delete-account");
     await supabase.auth.signInWithOtp({
@@ -113,6 +145,9 @@ function renderDeletionPage() {
   setText("#before-title", text.before);
   setText("#request-title", text.requestTitle);
   setText("#request-lead", text.requestLead);
+  setText("#verify-title", text.verifyTitle);
+  setText("#verify-lead", text.verifyLead);
+  setText("#verify-button", text.verifyButton);
   setText("#email-label", text.email);
   setText("#request-button", text.send);
   setText("#verified-label", text.verified);
@@ -157,6 +192,7 @@ async function showConfirmedSession() {
       return;
     }
     requestView.hidden = true;
+    verifyView.hidden = true;
     confirmView.hidden = false;
     document.querySelector("#confirm-email").textContent = user.email ?? "";
     const url = new URL(location.href);
@@ -179,6 +215,7 @@ function setRequestBusy(busy, message, isStatus = false) {
 /** 成功または失敗の結果を、読み上げやすいテキストとして表示する。 */
 function showResult(title, copy, success) {
   requestView.hidden = true;
+  verifyView.hidden = true;
   confirmView.hidden = true;
   resultView.hidden = false;
   document.querySelector("#result-mark").textContent = success ? "✓" : "!";
